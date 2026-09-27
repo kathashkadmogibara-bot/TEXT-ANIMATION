@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MOGIBARA Text Motion Editor</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#0b0b0f;
+    color:white;
+    min-height:100vh;
+}
+
+header{
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    background:#111116;
+    border-bottom:1px solid #292932;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:2px;
+}
+
+.logo span{
+    font-size:10px;
+    opacity:.5;
+    margin-left:5px;
+}
+
+.headerBtns{
+    display:flex;
+    gap:8px;
+}
+
+button{
+    border:0;
+    outline:0;
+    cursor:pointer;
+    color:white;
+    background:#202027;
+    border:1px solid #363641;
+    padding:10px 13px;
+    border-radius:9px;
+    font-weight:600;
+}
+
+button:hover{
+    background:#2b2b35;
+}
+
+.primary{
+    background:#ffffff;
+    color:#111;
+    border-color:white;
+}
+
+.primary:hover{
+    background:#dddddd;
+}
+
+.app{
+    display:grid;
+    grid-template-columns:270px 1fr 290px;
+    height:calc(100vh - 60px);
+}
+
+/* LEFT */
+.left{
+    background:#111116;
+    border-right:1px solid #292932;
+    padding:15px;
+    overflow:auto;
+}
+
+.panelTitle{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#858591;
+    margin:5px 0 12px;
+}
+
+.textInput{
+    width:100%;
+    min-height:90px;
+    resize:vertical;
+    background:#0b0b0f;
+    color:white;
+    border:1px solid #35353f;
+    border-radius:10px;
+    padding:12px;
+    outline:none;
+    font-size:15px;
+}
+
+.textInput:focus{
+    border-color:#777784;
+}
+
+.addBtn{
+    width:100%;
+    margin-top:10px;
+}
+
+.layerList{
+    margin-top:20px;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.layer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px;
+    border:1px solid #30303a;
+    border-radius:9px;
+    background:#18181e;
+    cursor:pointer;
+}
+
+.layer.active{
+    border-color:#fff;
+}
+
+.layerName{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    max-width:180px;
+}
+
+.layerRemove{
+    padding:5px 8px;
+    font-size:12px;
+}
+
+/* CENTER */
+.center{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    background:#08080b;
+}
+
+.previewTop{
+    height:45px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 14px;
+    border-bottom:1px solid #292932;
+}
+
+.previewTop small{
+    color:#777783;
+}
+
+.canvasArea{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:25px;
+    overflow:hidden;
+}
+
+.stage{
+    width:min(850px,100%);
+    aspect-ratio:16/9;
+    position:relative;
+    overflow:hidden;
+    border-radius:12px;
+    background:#00aaff;
+    box-shadow:0 20px 70px rgba(0,0,0,.45);
+}
+
+.stageText{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:90%;
+    text-align:center;
+    white-space:pre-wrap;
+    word-break:break-word;
+    font-weight:800;
+    line-height:1.05;
+    user-select:none;
+}
+
+/* RIGHT */
+.right{
+    background:#111116;
+    border-left:1px solid #292932;
+    padding:15px;
+    overflow:auto;
+}
+
+.control{
+    margin-bottom:18px;
+}
+
+.control label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:#aaaab4;
+    margin-bottom:7px;
+}
+
+input[type="range"]{
+    width:100%;
+    accent-color:white;
+}
+
+input[type="color"]{
+    width:100%;
+    height:40px;
+    background:#18181e;
+    border:1px solid #363641;
+    border-radius:8px;
+    padding:3px;
+}
+
+select{
+    width:100%;
+    background:#18181e;
+    color:white;
+    border:1px solid #363641;
+    border-radius:8px;
+    padding:10px;
+    outline:none;
+}
+
+.row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.actionGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.full{
+    width:100%;
+}
+
+.status{
+    margin-top:12px;
+    font-size:11px;
+    color:#777783;
+    text-align:center;
+}
+
+/* ANIMATIONS */
+
+.anim-none{
+    animation:none !important;
+}
+
+.anim-fade{
+    animation:fade 2s ease-in-out infinite alternate;
+}
+
+.anim-slide{
+    animation:slide 2s ease-in-out infinite alternate;
+}
+
+.anim-zoom{
+    animation:zoom 2s ease-in-out infinite alternate;
+}
+
+.anim-bounce{
+    animation:bounce 1.3s ease-in-out infinite;
+}
+
+.anim-rotate{
+    animation:rotate 3s ease-in-out infinite;
+}
+
+.anim-wave{
+    animation:wave 1.8s ease-in-out infinite;
+}
+
+.anim-type{
+    overflow:hidden;
+    white-space:nowrap;
+    animation:type 3s steps(25,end) infinite alternate;
+}
+
+.anim-glow{
+    animation:glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes fade{
+    from{opacity:.15}
+    to{opacity:1}
+}
+
+@keyframes slide{
+    from{
+        transform:translate(-75%,-50%);
+        opacity:.2;
+    }
+    to{
+        transform:translate(-50%,-50%);
+        opacity:1;
+    }
+}
+
+@keyframes zoom{
+    from{
+        transform:translate(-50%,-50%) scale(.45);
+        opacity:.2;
+    }
+    to{
+        transform:translate(-50%,-50%) scale(1);
+        opacity:1;
+    }
+}
+
+@keyframes bounce{
+    0%,100%{
+        transform:translate(-50%,-50%);
+    }
+    50%{
+        transform:translate(-50%,calc(-50% - 35px));
+    }
+}
+
+@keyframes rotate{
+    0%{
+        transform:translate(-50%,-50%) rotate(-8deg);
+    }
+    50%{
+        transform:translate(-50%,-50%) rotate(8deg);
+    }
+    100%{
+        transform:translate(-50%,-50%) rotate(-8deg);
+    }
+}
+
+@keyframes wave{
+    0%,100%{
+        transform:translate(-50%,-50%) skewX(-8deg);
+    }
+    50%{
+        transform:translate(-50%,-50%) skewX(8deg);
+    }
+}
+
+@keyframes type{
+    from{
+        clip-path:inset(0 100% 0 0);
+    }
+    to{
+        clip-path:inset(0 0 0 0);
+    }
+}
+
+@keyframes glow{
+    from{
+        filter:drop-shadow(0 0 2px currentColor);
+    }
+    to{
+        filter:drop-shadow(0 0 20px currentColor);
+    }
+}
+
+@media(max-width:950px){
+    .app{
+        grid-template-columns:220px 1fr;
+    }
+
+    .right{
+        position:fixed;
+        right:0;
+        top:60px;
+        width:290px;
+        height:calc(100vh - 60px);
+        transform:translateX(100%);
+        transition:.25s;
+        z-index:20;
+    }
+
+    .right.open{
+        transform:translateX(0);
+    }
+
+    .settingsBtn{
+        display:block;
+    }
+}
+
+@media(min-width:951px){
+    .settingsBtn{
+        display:none;
+    }
+}
+
+@media(max-width:650px){
+    .app{
+        grid-template-columns:1fr;
+    }
+
+    .left{
+        display:none;
+    }
+
+    .stage{
+        width:100%;
+    }
+
+    .canvasArea{
+        padding:12px;
+    }
+
+    header{
+        padding:0 10px;
+    }
+
+    .logo{
+        font-size:16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        MOGIBARA <span>TEXT MOTION</span>
+    </div>
+
+    <div class="headerBtns">
+        <button class="settingsBtn" onclick="toggleSettings()">⚙ Edit</button>
+        <button onclick="resetEditor()">Reset</button>
+        <button class="primary" onclick="downloadText()">↓ Download</button>
+    </div>
+</header>
+
+<div class="app">
+
+    <!-- LEFT -->
+    <aside class="left">
+
+        <div class="panelTitle">Add Text</div>
+
+        <textarea
+            id="textInput"
+            class="textInput"
+            placeholder="Write your text here..."
+        >MOGIBARA</textarea>
+
+        <button class="addBtn primary" onclick="addText()">
+            + Add Text
+        </button>
+
+        <div class="panelTitle" style="margin-top:25px">
+            Text Layers
+        </div>
+
+        <div id="layerList" class="layerList"></div>
+
+    </aside>
+
+
+    <!-- CENTER -->
+    <main class="center">
+
+        <div class="previewTop">
+            <small>LIVE PREVIEW</small>
+            <small id="layerCount">0 layers</small>
+        </div>
+
+        <div class="canvasArea">
+
+            <div id="stage" class="stage">
+
+                <div id="stageText" class="stageText">
+                    MOGIBARA
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- RIGHT -->
+    <aside id="settings" class="right">
+
+        <div class="panelTitle">Text Editing</div>
+
+        <div class="control">
+
+            <label>
+                <span>Text</span>
+            </label>
+
+            <textarea
+                id="editText"
+                class="textInput"
+                style="min-height:70px"
+                oninput="updateText()"
+            ></textarea>
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Animation</span>
+            </label>
+
+            <select id="animation" onchange="updateAnimation()">
+
+                <option value="none">None</option>
+                <option value="fade">Fade</option>
+                <option value="slide">Slide</option>
+                <option value="zoom">Zoom</option>
+                <option value="bounce">Bounce</option>
+                <option value="rotate">Rotate</option>
+                <option value="wave">Wave</option>
+                <option value="type">Typewriter</option>
+                <option value="glow">Glow</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Animation Speed</span>
+                <span id="speedValue">2s</span>
+            </label>
+
+            <input
+                id="speed"
+                type="range"
+                min=".3"
+                max="5"
+                step=".1"
+                value="2"
+                oninput="updateSpeed()"
+            >
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Font Size</span>
+                <span id="sizeValue">70</span>
+            </label>
+
+            <input
+                id="fontSize"
+                type="range"
+                min="20"
+                max="180"
+                value="70"
+                oninput="updateSize()"
+            >
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Text Color</span>
+            </label>
+
+            <input
+                id="textColor"
+                type="color"
+                value="#ffffff"
+                oninput="updateColor()"
+            >
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Background</span>
+                <span>Opposite</span>
+            </label>
+
+            <input
+                id="bgColor"
+                type="color"
+                value="#000000"
+                oninput="updateBackground()"
+            >
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Gradient</span>
+            </label>
+
+            <select id="gradient" onchange="updateGradient()">
+
+                <option value="none">Solid Color</option>
+                <option value="linear">Linear Gradient</option>
+                <option value="radial">Radial Gradient</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="control">
+
+            <label>
+                <span>Second Color</span>
+            </label>
+
+            <input
+                id="secondColor"
+                type="color"
+                value="#00ffff"
+                oninput="updateGradient()"
+            >
+
+        </div>
+
+
+        <div class="control">
+
+            <div class="row">
+
+                <button onclick="duplicateText()">
+                    Duplicate
+                </button>
+
+                <button onclick="removeText()">
+                    Remove
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="control">
+
+            <button
+                class="full"
+                onclick="resetCurrentStyle()"
+            >
+                ↻ Reset Editing
+            </button>
+
+        </div>
+
+        <div class="status" id="status">
+            Ready
+        </div>
+
+    </aside>
+
+</div>
+
+
+<script>
+
+let layers = [];
+
+let selected = -1;
+
+
+/* DEFAULT STYLE */
+
+function defaultStyle(){
+
+    return {
+        text:"MOGIBARA",
+        animation:"fade",
+        speed:2,
+        size:70,
+        color:"#ffffff",
+        bg:"#000000",
+        gradient:"none",
+        second:"#00ffff"
+    };
+
+}
+
+
+/* ADD TEXT */
+
+function addText(){
+
+    let input = document.getElementById("textInput");
+
+    let value = input.value.trim();
+
+    if(!value){
+        value = "New Text";
+    }
+
+    let item = defaultStyle();
+
+    item.text = value;
+
+    layers.push(item);
+
+    selected = layers.length - 1;
+
+    renderLayers();
+    loadSelected();
+
+}
+
+
+/* RENDER LAYERS */
+
+function renderLayers(){
+
+    let list = document.getElementById("layerList");
+
+    list.innerHTML = "";
+
+    layers.forEach((layer,index)=>{
+
+        let div = document.createElement("div");
+
+        div.className =
+            "layer " +
+            (index === selected ? "active" : "");
+
+        div.onclick = function(){
+
+            selected = index;
+
+            renderLayers();
+            loadSelected();
+
+        };
+
+        let name = document.createElement("div");
+
+        name.className = "layerName";
+
+        name.textContent =
+            layer.text || "Empty Text";
+
+        let remove = document.createElement("button");
+
+        remove.className = "layerRemove";
+
+        remove.textContent = "×";
+
+        remove.onclick = function(e){
+
+            e.stopPropagation();
+
+            layers.splice(index,1);
+
+            if(selected >= layers.length){
+                selected = layers.length - 1;
+            }
+
+            renderLayers();
+            loadSelected();
+
+        };
+
+        div.appendChild(name);
+        div.appendChild(remove);
+
+        list.appendChild(div);
+
+    });
+
+    document.getElementById("layerCount").textContent =
+        layers.length + (layers.length === 1 ? " layer" : " layers");
+
+}
+
+
+/* LOAD SELECTED */
+
+function loadSelected(){
+
+    let text = document.getElementById("stageText");
+    let stage = document.getElementById("stage");
+
+    if(selected < 0 || !layers[selected]){
+
+        text.textContent = "";
+        return;
+
+    }
+
+    let l = layers[selected];
+
+    document.getElementById("editText").value = l.text;
+
+    document.getElementById("animation").value = l.animation;
+
+    document.getElementById("speed").value = l.speed;
+
+    document.getElementById("fontSize").value = l.size;
+
+    document.getElementById("textColor").value = l.color;
+
+    document.getElementById("bgColor").value = l.bg;
+
+    document.getElementById("gradient").value = l.gradient;
+
+    document.getElementById("secondColor").value = l.second;
+
+    document.getElementById("speedValue").textContent =
+        l.speed + "s";
+
+    document.getElementById("sizeValue").textContent =
+        l.size;
+
+    text.textContent = l.text;
+
+    text.style.fontSize = l.size + "px";
+
+    text.style.color = l.color;
+
+    stage.style.background = l.bg;
+
+    applyGradient();
+
+    applyAnimation();
+
+}
+
+
+/* TEXT */
+
+function updateText(){
+
+    if(selected < 0) return;
+
+    let value =
+        document.getElementById("editText").value;
+
+    layers[selected].text = value;
+
+    document.getElementById("stageText").textContent = value;
+
+    renderLayers();
+
+}
+
+
+/* ANIMATION */
+
+function updateAnimation(){
+
+    if(selected < 0) return;
+
+    layers[selected].animation =
+        document.getElementById("animation").value;
+
+    applyAnimation();
+
+}
+
+
+function applyAnimation(){
+
+    let text = document.getElementById("stageText");
+
+    text.className = "stageText";
+
+    if(selected < 0) return;
+
+    let type =
+        layers[selected].animation;
+
+    if(type !== "none"){
+
+        text.classList.add("anim-" + type);
+
+    }
+
+    applySpeed();
+
+}
+
+
+/* SPEED */
+
+function updateSpeed(){
+
+    if(selected < 0) return;
+
+    let value =
+        parseFloat(document.getElementById("speed").value);
+
+    layers[selected].speed = value;
+
+    document.getElementById("speedValue").textContent =
+        value + "s";
+
+    applySpeed();
+
+}
+
+
+function applySpeed(){
+
+    if(selected < 0) return;
+
+    let text =
+        document.getElementById("stageText");
+
+    text.style.animationDuration =
+        layers[selected].speed + "s";
+
+}
+
+
+/* SIZE */
+
+function updateSize(){
+
+    if(selected < 0) return;
+
+    let value =
+        document.getElementById("fontSize").value;
+
+    layers[selected].size = value;
+
+    document.getElementById("sizeValue").textContent =
+        value;
+
+    document.getElementById("stageText").style.fontSize =
+        value + "px";
+
+}
+
+
+/* COLOR */
+
+function updateColor(){
+
+    if(selected < 0) return;
+
+    let value =
+        document.getElementById("textColor").value;
+
+    layers[selected].color = value;
+
+    document.getElementById("stageText").style.color =
+        value;
+
+    applyGradient();
+
+}
+
+
+/* BACKGROUND */
+
+function updateBackground(){
+
+    if(selected < 0) return;
+
+    let value =
+        document.getElementById("bgColor").value;
+
+    layers[selected].bg = value;
+
+    document.getElementById("stage").style.background =
+        value;
+
+}
+
+
+/* GRADIENT */
+
+function updateGradient(){
+
+    if(selected < 0) return;
+
+    layers[selected].gradient =
+        document.getElementById("gradient").value;
+
+    layers[selected].second =
+        document.getElementById("secondColor").value;
+
+    applyGradient();
+
+}
+
+
+function applyGradient(){
+
+    if(selected < 0) return;
+
+    let l = layers[selected];
+
+    let text =
+        document.getElementById("stageText");
+
+    if(l.gradient === "linear"){
+
+        text.style.background =
+            "linear-gradient(90deg," +
+            l.color + "," +
+            l.second + ")";
+
+        text.style.webkitBackgroundClip = "text";
+
+        text.style.webkitTextFillColor = "transparent";
+
+    }
+
+    else if(l.gradient === "radial"){
+
+        text.style.background =
+            "radial-gradient(circle," +
+            l.color + "," +
+            l.second + ")";
+
+        text.style.webkitBackgroundClip = "text";
+
+        text.style.webkitTextFillColor = "transparent";
+
+    }
+
+    else{
+
+        text.style.background = "none";
+
+        text.style.webkitBackgroundClip = "initial";
+
+        text.style.webkitTextFillColor = l.color;
+
+        text.style.color = l.color;
+
+    }
+
+}
+
+
+/* OPPOSITE COLOR */
+
+function oppositeColor(hex){
+
+    hex = hex.replace("#","");
+
+    let r = parseInt(hex.substring(0,2),16);
+
+    let g = parseInt(hex.substring(2,4),16);
+
+    let b = parseInt(hex.substring(4,6),16);
+
+    return "#" +
+        (255-r).toString(16).padStart(2,"0") +
+        (255-g).toString(16).padStart(2,"0") +
+        (255-b).toString(16).padStart(2,"0");
+
+}
+
+
+/* SET OPPOSITE BACKGROUND */
+
+function setOppositeBackground(){
+
+    if(selected < 0) return;
+
+    let color =
+        layers[selected].color;
+
+    let opposite =
+        oppositeColor(color);
+
+    layers[selected].bg = opposite;
+
+    document.getElementById("bgColor").value =
+        opposite;
+
+    document.getElementById("stage").style.background =
+        opposite;
+
+}
+
+
+/* DUPLICATE */
+
+function duplicateText(){
+
+    if(selected < 0) return;
+
+    let copy =
+        JSON.parse(
+            JSON.stringify(layers[selected])
+        );
+
+    copy.text += " Copy";
+
+    layers.push(copy);
+
+    selected = layers.length - 1;
+
+    renderLayers();
+    loadSelected();
+
+}
+
+
+/* REMOVE */
+
+function removeText(){
+
+    if(selected < 0) return;
+
+    layers.splice(selected,1);
+
+    selected = layers.length - 1;
+
+    renderLayers();
+    loadSelected();
+
+}
+
+
+/* RESET CURRENT STYLE */
+
+function resetCurrentStyle(){
+
+    if(selected < 0) return;
+
+    let oldText =
+        layers[selected].text;
+
+    layers[selected] =
+        defaultStyle();
+
+    layers[selected].text =
+        oldText;
+
+    loadSelected();
+    renderLayers();
+
+    setStatus("Editing reset");
+
+}
+
+
+/* RESET EDITOR */
+
+function resetEditor(){
+
+    layers = [];
+
+    selected = -1;
+
+    document.getElementById("stageText").textContent =
+        "";
+
+    document.getElementById("textInput").value =
+        "MOGIBARA";
+
+    renderLayers();
+
+    setStatus("Editor reset");
+
+}
+
+
+/* SETTINGS */
+
+function toggleSettings(){
+
+    document
+        .getElementById("settings")
+        .classList.toggle("open");
+
+}
+
+
+/* STATUS */
+
+function setStatus(text){
+
+    document.getElementById("status").textContent =
+        text;
+
+}
+
+
+/* DOWNLOAD */
+
+function downloadText(){
+
+    if(selected < 0){
+
+        alert("First add some text.");
+
+        return;
+
+    }
+
+    let l = layers[selected];
+
+    let animationCSS = "";
+
+    if(l.animation !== "none"){
+
+        animationCSS =
+        "animation:" +
+        l.animation +
+        " " +
+        l.speed +
+        "s infinite alternate;";
+
+    }
+
+    let gradientCSS = "";
+
+    if(l.gradient === "linear"){
+
+        gradientCSS =
+        "background:linear-gradient(90deg,"+
+        l.color+","+l.second+");"+
+        "-webkit-background-clip:text;"+
+        "-webkit-text-fill-color:transparent;";
+
+    }
+
+    else if(l.gradient === "radial"){
+
+        gradientCSS =
+        "background:radial-gradient(circle,"+
+        l.color+","+l.second+");"+
+        "-webkit-background-clip:text;"+
+        "-webkit-text-fill-color:transparent;";
+
+    }
+
+    else{
+
+        gradientCSS =
+        "color:"+l.color+";";
+
+    }
+
+    let html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>MOGIBARA Animated Text</title>
+
+<style>
+
+body{
+margin:0;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:${l.bg};
+overflow:hidden;
+}
+
+.text{
+font-family:Arial,sans-serif;
+font-weight:800;
+font-size:${l.size}px;
+text-align:center;
+${gradientCSS}
+${animationCSS}
+}
+
+@keyframes fade{
+from{opacity:.15}
+to{opacity:1}
+}
+
+@keyframes slide{
+from{transform:translateX(-100px);opacity:.2}
+to{transform:translateX(0);opacity:1}
+}
+
+@keyframes zoom{
+from{transform:scale(.4);opacity:.2}
+to{transform:scale(1);opacity:1}
+}
+
+@keyframes bounce{
+0%,100%{transform:translateY(0)}
+50%{transform:translateY(-35px)}
+}
+
+@keyframes rotate{
+0%{transform:rotate(-8deg)}
+50%{transform:rotate(8deg)}
+100%{transform:rotate(-8deg)}
+}
+
+@keyframes wave{
+0%,100%{transform:skewX(-8deg)}
+50%{transform:skewX(8deg)}
+}
+
+@keyframes glow{
+from{filter:drop-shadow(0 0 2px currentColor)}
+to{filter:drop-shadow(0 0 20px currentColor)}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="text">
+${escapeHTML(l.text)}
+</div>
+
+</body>
+</html>`;
+
+    let blob =
+        new Blob([html],{
+            type:"text/html"
+        });
+
+    let url =
+        URL.createObjectURL(blob);
+
+    let a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "MOGIBARA-animated-text.html";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+    setStatus("Downloaded");
+
+}
+
+
+/* ESCAPE */
+
+function escapeHTML(str){
+
+    return str
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* INITIAL */
+
+addText();
+
+setOppositeBackground();
+
+</script>
+
+</body>
+  </html>
